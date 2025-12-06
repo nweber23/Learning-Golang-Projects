@@ -20,8 +20,33 @@ func Run(username string) error {
         return nil
     }
 
+    var lastMsg string
+    var count int
+
     for _, e := range events {
-        fmt.Println(internal.HumanizeEvent(e))
+        currentMsg := internal.HumanizeEvent(e)
+
+        if currentMsg == lastMsg {
+            count++
+        } else {
+            if lastMsg != "" {
+                printEvent(lastMsg, count)
+            }
+            lastMsg = currentMsg
+            count = 1
+        }
     }
+    if lastMsg != "" {
+        printEvent(lastMsg, count)
+    }
+
     return nil
+}
+
+func printEvent(msg string, count int) {
+    if count > 1 {
+        fmt.Printf("- %s (x%d)\n", msg, count)
+    } else {
+        fmt.Printf("- %s\n", msg)
+    }
 }
