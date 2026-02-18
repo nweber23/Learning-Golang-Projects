@@ -47,3 +47,26 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not execute template", http.StatusInternalServerError)
 	}
 }
+
+func ArticlePage(w http.ResponseWriter, r *http.Request) {
+	slug := strings.TrimPrefix(r.URL.Path, "/article/")
+	data, err := os.ReadFile(filepath.Join("./articles", slug+".json"))
+	if err != nil {
+		http.Error(w, "Could not read article", http.StatusInternalServerError)
+		return
+	}
+	var article Article
+	if err := json.Unmarshal(data, &article); err != nil {
+		http.Error(w, "Could not parse article", http.StatusInternalServerError)
+		return
+	}
+	tmpl, err := template.ParseFiles("./templates/guest/article.html")
+	if err != nil {
+		http.Error(w, "Could not parse template", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html")
+	if err := tmpl.Execute(w, article); err != nil {
+		http.Error(w, "Could not execute template", http.StatusInternalServerError)
+	}
+}
