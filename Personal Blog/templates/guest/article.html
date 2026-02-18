@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - Personal Blog</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <h1>Personal Blog</h1>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/admin/login">Admin Login</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <article class="full-article">
+            <h1>{{.Title}}</h1>
+            <p class="date">Published: {{.Date}}</p>
+            <hr>
+            <div class="content">
+                {{.Content}}
+            </div>
+            <hr>
+            <a href="/" class="back-link">← Back to Home</a>
+        </article>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2024 Personal Blog. All rights reserved.</p>
+</footer>
+</body>
+</html>
