@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 	"log"
-	"net/http"
 	"math/rand"
+	"net/http"
 	"strconv"
+
 	"github.com/gorilla/mux"
 )
 
