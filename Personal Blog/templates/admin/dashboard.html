@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Personal Blog</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Personal Blog - Admin Dashboard</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">View Blog</a></li>
+                    <li><a href="/admin/logout">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="dashboard">
+                <h2>Manage Articles</h2>
+                <a href="/admin/article/add" class="btn btn-primary">+ Add New Article</a>
+
+                {{if .}}
+                    <table class="articles-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .}}
+                                <tr>
+                                    <td>{{.Title}}</td>
+                                    <td>{{.Date}}</td>
+                                    <td class="actions">
+                                        <a href="/admin/article/edit/{{.Slug}}" class="btn btn-secondary">Edit</a>
+                                        <a href="/admin/article/delete/{{.Slug}}" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                                    </td>
+                                </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                {{else}}
+                    <p class="no-articles">No articles yet. <a href="/admin/article/add">Create one now</a></p>
+                {{end}}
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Personal Blog. All rights reserved.</p>
+    </footer>
+</body>
+</html>
