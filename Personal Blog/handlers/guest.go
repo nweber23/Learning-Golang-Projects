@@ -25,7 +25,7 @@ func HomePage(w http.ResponseWriter, _ *http.Request) {
 	}
 	var articles []Article
 	for _, file := range files {
-		if !file.IsDir() && strings.HasPrefix(file.Name(), ".json") {
+		if !file.IsDir() && strings.HasSuffix(file.Name(), ".json") {
 			data, err := os.ReadFile(filepath.Join("./articles", file.Name()))
 			if err != nil {
 				continue
