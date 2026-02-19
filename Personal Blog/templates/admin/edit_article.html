@@ -26,7 +26,7 @@
                 {{if .Error}}
                     <div class="error-message">{{.Error}}</div>
                 {{end}}
-                <form method="POST" action="/admin/article/edit/submit" class="article-form">
+                <form method="POST" action="/admin/article/edit/{{.Slug}}" class="article-form">
                     <input type="hidden" name="slug" value="{{.Slug}}">
                     <div class="form-group">
                         <label for="title">Title</label>
