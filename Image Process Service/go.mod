@@ -1,0 +1,12 @@
+module image-process-service
+
+go 1.21
+
+require (
+      github.com/gorilla/mux v1.8.1
+      github.com/golang-jwt/jwt/v5 v5.2.0
+      golang.org/x/crypto v0.19.0
+      github.com/google/uuid v1.5.0
+      golang.org/x/image v0.15.0
+)
+
