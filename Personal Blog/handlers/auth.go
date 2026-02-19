@@ -18,6 +18,14 @@ const (
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
+		cookie, err := r.Cookie("session_id")
+		if err == nil {
+			session, err := middleware.GetSession(cookie.Value)
+			if err == nil && session != nil {
+				http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+				return
+			}
+		}
 		displayLoginForm(w)
 		return
 	}
