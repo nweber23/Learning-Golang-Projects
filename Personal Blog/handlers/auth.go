@@ -62,7 +62,7 @@ func processLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("session")
+	cookie, err := r.Cookie("session_id")
 	if err == nil {
 		middleware.DeleteSession(cookie.Value)
 	}

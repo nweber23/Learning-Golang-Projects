@@ -85,6 +85,7 @@ func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 		}
 		if session == nil {
 			http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+			return
 		}
 		next(w, r)
 	}
