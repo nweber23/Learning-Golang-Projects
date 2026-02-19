@@ -17,7 +17,7 @@ type Article struct {
 	Slug    string `json:"slug"`
 }
 
-func HomePage(w http.ResponseWriter, r *http.Request) {
+func HomePage(w http.ResponseWriter, _ *http.Request) {
 	files, err := os.ReadDir("./articles")
 	if err != nil {
 		http.Error(w, "Could not read Articles", http.StatusInternalServerError)
