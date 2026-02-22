@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
-	"image-process-service/handlers"
 )
 
 type Claims struct {
@@ -18,12 +17,12 @@ func JWTMiddleware(jwtSecret string) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
-				JSONError(w, "Missing Authorization header", http.StatusUnauthorized)
+				JSONError(w, http.StatusUnauthorized, "Missing Authorization header")
 				return
 			}
 			parts := strings.Split(authHeader, " ")
 			if len(parts) != 2 || parts[0] != "Bearer" {
-				JSONError(w, "Invalid Authorization header format", http.StatusUnauthorized)
+				JSONError(w, http.StatusUnauthorized, "Invalid Authorization header format")
 				return
 			}
 			tokenString := parts[1]
@@ -34,11 +33,11 @@ func JWTMiddleware(jwtSecret string) func(next http.Handler) http.Handler {
 			})
 
 			if err != nil || !token.Valid {
-				JSONError(w, "Invalid token", http.StatusUnauthorized)
+				JSONError(w, http.StatusUnauthorized, "Invalid token")
 				return
 			}
 
-			r = handlers.SetUserIDInContext(r, claims.UserID)
+			r = SetUserIDInContext(r, claims.UserID)
 			next.ServeHTTP(w, r)
 		})
 	}
