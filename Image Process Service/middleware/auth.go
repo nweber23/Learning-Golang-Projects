@@ -27,12 +27,19 @@ func JWTMiddleware(jwtSecret string) func(next http.Handler) http.Handler {
 				return
 			}
 			tokenString := parts[1]
-			// TODO: Parse JWT token with claims
-			// TODO: Verify token signature
-			// TODO: Extract user ID from claims
-			// TODO: Attach user ID to request context using SetUserIDInContext
-			// TODO: Call next handler
-			JSONError(w, "Invalid token", http.StatusUnauthorized)
+
+			claims := &Claims{}
+			token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+				return []byte(jwtSecret), nil
+			})
+
+			if err != nil || !token.Valid {
+				JSONError(w, "Invalid token", http.StatusUnauthorized)
+				return
+			}
+
+			r = handlers.SetUserIDInContext(r, claims.UserID)
+			next.ServeHTTP(w, r)
 		})
 	}
 }
