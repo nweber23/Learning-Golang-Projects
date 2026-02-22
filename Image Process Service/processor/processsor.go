@@ -22,7 +22,7 @@ func (p *Processor) Process(src image.Image, req *models.TransformOptions) (imag
 		result = Resize(result, req.Resize.Width, req.Resize.Height)
 	}
 	if req.Crop != nil {
-		result = Crop(result, req.Crop.X, req.Crop.Y, req.Crop.Width, re
+		result = Crop(result, req.Crop.X, req.Crop.Y, req.Crop.Width, req.Crop.Height)
 	}
 	if req.Rotate != 0 {
 		result = Rotate(result, req.Rotate)
