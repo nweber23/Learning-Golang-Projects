@@ -3,11 +3,13 @@ package handlers
 import (
 	"net/http"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
+
 	"image-process-service/middleware"
 	"image-process-service/models"
-	"github.com/google/uuid"
-	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthHandler struct {
@@ -25,24 +27,24 @@ func NewAuthHandler(store *models.Store, jwtSecret string) *AuthHandler {
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var req models.RegisterRequest
 	if err := DecodeJSON(r, &req); err != nil {
-		middleware.JSONError(w, "Invalid request body", http.StatusBadRequest)
+		middleware.JSONError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	if req.Username == "" || req.Password == "" {
-		middleware.JSONError(w, "Username and password required", http.StatusBadRequest)
+		middleware.JSONError(w, http.StatusBadRequest, "Username and password required")
 		return
 	}
 
 	existing, _ := h.store.FindUserByUsername(req.Username)
 	if existing != nil {
-		middleware.JSONError(w, "Username already exists", http.StatusConflict)
+		middleware.JSONError(w, http.StatusConflict, "Username already exists")
 		return
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		middleware.JSONError(w, "Error processing password", http.StatusInternalServerError)
+		middleware.JSONError(w, http.StatusInternalServerError, "Error processing password")
 		return
 	}
 
@@ -54,13 +56,13 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.store.SaveUser(user); err != nil {
-		middleware.JSONError(w, "Error saving user", http.StatusInternalServerError)
+		middleware.JSONError(w, http.StatusInternalServerError, "Error saving user")
 		return
 	}
 
 	token, err := h.generateJWT(user.ID)
 	if err != nil {
-		middleware.JSONError(w, "Error generating token", http.StatusInternalServerError)
+		middleware.JSONError(w, http.StatusInternalServerError, "Error generating token")
 		return
 	}
 
@@ -76,24 +78,24 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req models.LoginRequest
 	if err := DecodeJSON(r, &req); err != nil {
-		middleware.JSONError(w, "Invalid request body", http.StatusBadRequest)
+		middleware.JSONError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	user, err := h.store.FindUserByUsername(req.Username)
 	if err != nil || user == nil {
-		middleware.JSONError(w, "Invalid username or password", http.StatusUnauthorized)
+		middleware.JSONError(w, http.StatusUnauthorized, "Invalid username or password")
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
-		middleware.JSONError(w, "Invalid username or password", http.StatusUnauthorized)
+		middleware.JSONError(w, http.StatusUnauthorized, "Invalid username or password")
 		return
 	}
 
 	token, err := h.generateJWT(user.ID)
 	if err != nil {
-		middleware.JSONError(w, "Error generating token", http.StatusInternalServerError)
+		middleware.JSONError(w, http.StatusInternalServerError, "Error generating token")
 		return
 	}
 
