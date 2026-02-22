@@ -30,7 +30,11 @@ func (ls *LocalStorage) Upload(filename string, data io.Reader) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
 	if _, err := io.Copy(file, data); err != nil {
 		return "", err
 	}
