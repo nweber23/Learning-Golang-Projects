@@ -38,7 +38,7 @@ func (ls *LocalStorage) Upload(filename string, data io.Reader) (string, error) 
 	if _, err := io.Copy(file, data); err != nil {
 		return "", err
 	}
-	return filePath, nil
+	return filename, nil
 }
 
 func (ls *LocalStorage) Download(filename string) (io.Reader, error) {

@@ -77,17 +77,19 @@ func (h *ImageHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := h.storage.Upload(filename, file)
+	storedFilename, err := h.storage.Upload(filename, file)
 	if err != nil {
 		middleware.JSONError(w, http.StatusInternalServerError, "Error uploading file")
 		return
 	}
 
+	imageURL := fmt.Sprintf("/download/%s", storedFilename)
+
 	imageRecord := &models.Image{
 		ID:          uuid.New().String(),
 		UserID:      userID,
 		Filename:    header.Filename,
-		OriginalURL: url,
+		OriginalURL: storedFilename,
 		Width:       bounds.Max.X - bounds.Min.X,
 		Height:      bounds.Max.Y - bounds.Min.Y,
 		Size:        header.Size,
@@ -103,7 +105,7 @@ func (h *ImageHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
 	WriteJSON(w, http.StatusCreated, models.ImageResponse{
 		ID:        imageRecord.ID,
 		Filename:  imageRecord.Filename,
-		URL:       imageRecord.OriginalURL,
+		URL:       imageURL,
 		Width:     imageRecord.Width,
 		Height:    imageRecord.Height,
 		Size:      imageRecord.Size,
@@ -136,7 +138,7 @@ func (h *ImageHandler) ListImages(w http.ResponseWriter, r *http.Request) {
 		responses = append(responses, &models.ImageResponse{
 			ID:        img.ID,
 			Filename:  img.Filename,
-			URL:       img.OriginalURL,
+			URL:       fmt.Sprintf("/download/%s", img.OriginalURL),
 			Width:     img.Width,
 			Height:    img.Height,
 			Size:      img.Size,
@@ -175,7 +177,7 @@ func (h *ImageHandler) GetImage(w http.ResponseWriter, r *http.Request) {
 	WriteJSON(w, http.StatusOK, models.ImageResponse{
 		ID:        img.ID,
 		Filename:  img.Filename,
-		URL:       img.OriginalURL,
+		URL:       fmt.Sprintf("/download/%s", img.OriginalURL),
 		Width:     img.Width,
 		Height:    img.Height,
 		Size:      img.Size,
@@ -263,8 +265,27 @@ func (h *ImageHandler) TransformImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultFilename := fmt.Sprintf("transformed-%s.%s", uuid.New().String(), outputFormat)
-	resultURL, err := h.storage.Upload(resultFilename, &buf)
+	resultStoredFilename, err := h.storage.Upload(resultFilename, &buf)
 	if err != nil {
+		middleware.JSONError(w, http.StatusInternalServerError, "Error saving transformed image")
+		return
+	}
+
+	resultBounds := resultImg.Bounds()
+
+	transformedImage := &models.Image{
+		ID:          uuid.New().String(),
+		UserID:      userID,
+		Filename:    fmt.Sprintf("transformed_%s", img.Filename),
+		OriginalURL: resultStoredFilename,
+		Width:       resultBounds.Max.X - resultBounds.Min.X,
+		Height:      resultBounds.Max.Y - resultBounds.Min.Y,
+		Size:        int64(buf.Len()),
+		Format:      outputFormat,
+		CreatedAt:   time.Now(),
+	}
+
+	if err := h.store.SaveImage(transformedImage); err != nil {
 		middleware.JSONError(w, http.StatusInternalServerError, "Error saving transformed image")
 		return
 	}
@@ -273,7 +294,7 @@ func (h *ImageHandler) TransformImage(w http.ResponseWriter, r *http.Request) {
 		ID:              uuid.New().String(),
 		UserID:          userID,
 		OriginalImageID: imageID,
-		ResultURL:       resultURL,
+		ResultURL:       fmt.Sprintf("/download/%s", resultStoredFilename),
 		CreatedAt:       time.Now(),
 	}
 
@@ -282,5 +303,14 @@ func (h *ImageHandler) TransformImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteJSON(w, http.StatusOK, transformation)
+	WriteJSON(w, http.StatusOK, models.ImageResponse{
+		ID:        transformedImage.ID,
+		Filename:  transformedImage.Filename,
+		URL:       fmt.Sprintf("/download/%s", transformedImage.OriginalURL),
+		Width:     transformedImage.Width,
+		Height:    transformedImage.Height,
+		Size:      transformedImage.Size,
+		Format:    transformedImage.Format,
+		CreatedAt: transformedImage.CreatedAt,
+	})
 }

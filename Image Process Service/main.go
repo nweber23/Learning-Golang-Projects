@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"path/filepath"
 
 	"image-process-service/config"
 	"image-process-service/handlers"
@@ -49,6 +50,13 @@ func main() {
 	router.HandleFunc("/app.js", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/javascript")
 		http.ServeFile(w, r, "app.js")
+	})
+
+	// Serve uploaded images
+	router.HandleFunc("/download/{filename}", func(w http.ResponseWriter, r *http.Request) {
+		filename := mux.Vars(r)["filename"]
+		w.Header().Set("Content-Type", "application/octet-stream")
+		http.ServeFile(w, r, filepath.Join(cfg.StoragePath, filename))
 	})
 
 	// Serve index.html for root path
