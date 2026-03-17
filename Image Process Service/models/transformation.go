@@ -37,7 +37,7 @@ type CropOptions struct {
 }
 
 type FilterOptions struct {
-	GrayScale  bool    `json:"gray_scale,omitempty"`
+	Grayscale  bool    `json:"grayscale,omitempty"`
 	Sepia      bool    `json:"sepia,omitempty"`
 	Blur       float64 `json:"blur,omitempty"`
 	Brightness float64 `json:"brightness,omitempty"`

@@ -31,3 +31,10 @@ type ImageRequest struct {
 	Limit  int              `json:"limit"`
 	Total  int              `json:"total"`
 }
+
+type ImageListResponse struct {
+	Images []*ImageResponse `json:"images"`
+	Page   int              `json:"page"`
+	Limit  int              `json:"limit"`
+	Total  int              `json:"total"`
+}
