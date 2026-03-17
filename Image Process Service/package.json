@@ -1,0 +1,13 @@
+{
+  "name": "imago-frontend",
+  "version": "1.0.0",
+  "description": "Image Processing Service Frontend",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "dev": "tsc && echo 'TypeScript compiled successfully'"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  }
+}

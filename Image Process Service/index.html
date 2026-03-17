@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Imago — Image Processing</title>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<div id="app">
+		<!-- Auth Page -->
+		<div id="authPage" class="page active">
+			<div class="auth-container">
+				<div class="auth-header">
+					<h1 class="logo">IMAGO</h1>
+					<p class="tagline">Transform. Refine. Deliver.</p>
+				</div>
+
+				<div class="auth-forms">
+					<div class="form-wrapper">
+						<div class="form-tabs">
+							<button class="tab-btn active" data-tab="login">Sign In</button>
+							<button class="tab-btn" data-tab="register">Create Account</button>
+						</div>
+
+						<form id="loginForm" class="auth-form active" data-form="login">
+							<div class="form-group">
+								<input type="text" id="loginUsername" placeholder="Username" required>
+								<label>Username</label>
+							</div>
+							<div class="form-group">
+								<input type="password" id="loginPassword" placeholder="Password" required>
+								<label>Password</label>
+							</div>
+							<button type="submit" class="btn btn-primary">Sign In</button>
+							<p class="form-error" id="loginError"></p>
+						</form>
+
+						<form id="registerForm" class="auth-form" data-form="register">
+							<div class="form-group">
+								<input type="text" id="regUsername" placeholder="Choose a username" required>
+								<label>Username</label>
+							</div>
+							<div class="form-group">
+								<input type="password" id="regPassword" placeholder="Create password" required>
+								<label>Password</label>
+							</div>
+							<button type="submit" class="btn btn-primary">Create Account</button>
+							<p class="form-error" id="registerError"></p>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Dashboard Page -->
+		<div id="dashboardPage" class="page">
+			<nav class="navbar">
+				<div class="nav-brand">IMAGO</div>
+				<div class="nav-right">
+					<span id="userDisplay" class="user-badge"></span>
+					<button id="logoutBtn" class="btn btn-text">Sign Out</button>
+				</div>
+			</nav>
+
+			<div class="dashboard-container">
+				<div class="dashboard-header">
+					<div>
+						<h2>Your Images</h2>
+						<p class="subtitle">Upload, transform, and manage your visual content</p>
+					</div>
+					<button id="uploadBtnHeader" class="btn btn-primary">New Upload</button>
+				</div>
+
+				<div class="gallery" id="gallery">
+					<div class="gallery-placeholder">
+						<div class="placeholder-icon">📸</div>
+						<p>No images yet</p>
+						<p class="placeholder-hint">Upload your first image to get started</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Upload Modal -->
+		<div id="uploadModal" class="modal">
+			<div class="modal-content">
+				<button class="modal-close">&times;</button>
+				<h3>Upload Image</h3>
+				<div class="upload-area" id="uploadArea">
+					<div class="upload-icon">⬆</div>
+					<p>Drop image here or click to select</p>
+					<p class="upload-hint">Max 50MB • JPEG, PNG, GIF, WebP</p>
+					<input type="file" id="fileInput" accept="image/*" hidden>
+				</div>
+				<div id="uploadProgress" class="progress-bar" style="display: none;">
+					<div class="progress-fill"></div>
+				</div>
+				<p class="upload-error" id="uploadError"></p>
+			</div>
+		</div>
+
+		<!-- Image Detail Modal -->
+		<div id="imageModal" class="modal">
+			<div class="modal-content modal-large">
+				<button class="modal-close">&times;</button>
+				<div class="image-detail">
+					<div class="image-preview">
+						<img id="detailImage" src="" alt="Image">
+					</div>
+					<div class="image-info">
+						<h3 id="imageName"></h3>
+						<div class="image-stats">
+							<div class="stat">
+								<span class="stat-label">Dimensions</span>
+								<span class="stat-value" id="imageDim"></span>
+							</div>
+							<div class="stat">
+								<span class="stat-label">Format</span>
+								<span class="stat-value" id="imageFormat"></span>
+							</div>
+							<div class="stat">
+								<span class="stat-label">Size</span>
+								<span class="stat-value" id="imageSize"></span>
+							</div>
+						</div>
+
+						<div class="transform-section">
+							<h4>Transform</h4>
+							<div class="transform-controls">
+								<div class="control-group">
+									<label>Resize</label>
+									<div class="control-row">
+										<input type="number" id="resizeWidth" placeholder="Width" min="1">
+										<input type="number" id="resizeHeight" placeholder="Height" min="1">
+									</div>
+								</div>
+
+								<div class="control-group">
+									<label>Rotate</label>
+									<select id="rotateSelect">
+										<option value="0">No rotation</option>
+										<option value="90">90°</option>
+										<option value="180">180°</option>
+										<option value="270">270°</option>
+									</select>
+								</div>
+
+								<div class="control-group">
+									<label>Flip</label>
+									<select id="flipSelect">
+										<option value="">No flip</option>
+										<option value="horizontal">Horizontal</option>
+										<option value="vertical">Vertical</option>
+									</select>
+								</div>
+
+								<div class="control-group">
+									<label>Format</label>
+									<select id="formatSelect">
+										<option value="jpeg">JPEG</option>
+										<option value="png">PNG</option>
+										<option value="webp">WebP</option>
+										<option value="gif">GIF</option>
+									</select>
+								</div>
+
+								<div class="control-group">
+									<label>Filters</label>
+									<div class="filter-checkboxes">
+										<label class="checkbox">
+											<input type="checkbox" id="grayscaleCheck">
+											<span>Grayscale</span>
+										</label>
+										<label class="checkbox">
+											<input type="checkbox" id="sepiaCheck">
+											<span>Sepia</span>
+										</label>
+									</div>
+								</div>
+							</div>
+
+							<button id="transformBtn" class="btn btn-primary btn-block">Apply Transform</button>
+							<p class="transform-error" id="transformError"></p>
+						</div>
+
+						<div class="image-actions">
+							<button id="deleteBtn" class="btn btn-danger">Delete Image</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="app.js"></script>
+</body>
+</html>

@@ -14,6 +14,21 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	cfg := config.LoadConfig()
 
@@ -25,6 +40,21 @@ func main() {
 	rateLimiter := middleware.NewRateLimiter(cfg.RateLimitPerHour)
 
 	router := mux.NewRouter()
+
+	// Serve static files (CSS, JS)
+	router.HandleFunc("/styles.css", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/css")
+		http.ServeFile(w, r, "styles.css")
+	})
+	router.HandleFunc("/app.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript")
+		http.ServeFile(w, r, "app.js")
+	})
+
+	// Serve index.html for root path
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "index.html")
+	}).Methods("GET")
 
 	router.HandleFunc("/register", authHandler.Register).Methods("POST")
 	router.HandleFunc("/login", authHandler.Login).Methods("POST")
@@ -43,7 +73,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    ":" + cfg.Port,
-		Handler: router,
+		Handler: corsMiddleware(router),
 	}
 	log.Printf("Starting server on http://localhost:%s", cfg.Port)
 	if err := server.ListenAndServe(); err != nil {
