@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Event Listeners
 function setupEventListeners() {
 	// Auth
-	document.querySelectorAll('.tab-btn').forEach(btn => {
+	document.querySelectorAll('.auth-tab').forEach(btn => {
 		btn.addEventListener('click', (e) => switchAuthTab(e.target.dataset.tab));
 	});
 
@@ -33,11 +33,12 @@ function setupEventListeners() {
 
 	document.getElementById('logoutBtn').addEventListener('click', logout);
 
-	// Upload
-	document.getElementById('uploadBtnHeader').addEventListener('click', () => {
-		document.getElementById('uploadModal').classList.add('active');
+	// Navigation
+	document.querySelectorAll('.nav-item').forEach(btn => {
+		btn.addEventListener('click', (e) => switchSection(e.currentTarget.dataset.section));
 	});
 
+	// Upload area
 	const uploadArea = document.getElementById('uploadArea');
 	const fileInput = document.getElementById('fileInput');
 
@@ -63,6 +64,12 @@ function setupEventListeners() {
 
 	fileInput.addEventListener('change', uploadImage);
 
+	// Upload buttons
+	const uploadBtnMain = document.getElementById('uploadBtnMain');
+	if (uploadBtnMain) {
+		uploadBtnMain.addEventListener('click', () => switchSection('upload'));
+	}
+
 	// Modal
 	document.querySelectorAll('.modal-close').forEach(btn => {
 		btn.addEventListener('click', (e) => {
@@ -83,11 +90,20 @@ function setupEventListeners() {
 
 // Auth Functions
 function switchAuthTab(tab) {
-	document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+	document.querySelectorAll('.auth-tab').forEach(btn => btn.classList.remove('active'));
 	document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
 
 	document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
 	document.querySelector(`[data-form="${tab}"]`).classList.add('active');
+}
+
+// Navigation Functions
+function switchSection(section) {
+	document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+	document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+
+	document.querySelector(`[data-section="${section}"]`).classList.add('active');
+	document.getElementById(`${section}Section`).classList.add('active');
 }
 
 async function login() {
@@ -239,7 +255,7 @@ async function uploadImage() {
 	const fileInput = document.getElementById('fileInput');
 	const file = fileInput.files[0];
 	const uploadError = document.getElementById('uploadError');
-	const progressBar = document.getElementById('uploadProgress');
+	const progressSection = document.getElementById('progressSection');
 
 	if (!file) return;
 
@@ -247,7 +263,7 @@ async function uploadImage() {
 	formData.append('file', file);
 
 	uploadError.classList.remove('show');
-	progressBar.style.display = 'block';
+	progressSection.style.display = 'block';
 
 	try {
 		const xhr = new XMLHttpRequest();
@@ -255,13 +271,14 @@ async function uploadImage() {
 		xhr.upload.addEventListener('progress', (e) => {
 			const percent = (e.loaded / e.total) * 100;
 			document.querySelector('.progress-fill').style.width = percent + '%';
+			document.getElementById('progressText').textContent = Math.round(percent) + '%';
 		});
 
 		xhr.addEventListener('load', () => {
 			if (xhr.status === 201) {
-				progressBar.style.display = 'none';
+				progressSection.style.display = 'none';
 				document.querySelector('.progress-fill').style.width = '0%';
-				document.getElementById('uploadModal').classList.remove('active');
+				document.getElementById('progressText').textContent = '0%';
 				fileInput.value = '';
 				loadImages();
 			} else {
@@ -297,7 +314,7 @@ async function openImageDetail(imageId) {
 		const img = await res.json();
 
 		document.getElementById('detailImage').src = img.url;
-		document.getElementById('imageName').textContent = img.filename;
+		document.getElementById('modalImageName').textContent = img.filename;
 		document.getElementById('imageDim').textContent = `${img.width}×${img.height}`;
 		document.getElementById('imageFormat').textContent = img.format.toUpperCase();
 		document.getElementById('imageSize').textContent = formatBytes(img.size);

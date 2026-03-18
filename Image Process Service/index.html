@@ -4,6 +4,9 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Imago — Image Processing</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,41 +14,37 @@
 		<!-- Auth Page -->
 		<div id="authPage" class="page active">
 			<div class="auth-container">
-				<div class="auth-header">
-					<h1 class="logo">IMAGO</h1>
-					<p class="tagline">Transform. Refine. Deliver.</p>
-				</div>
+				<div class="auth-content">
+					<div class="auth-header">
+						<div class="auth-logo">IMAGO</div>
+						<p class="auth-subtitle">Professional Image Processing</p>
+					</div>
 
-				<div class="auth-forms">
-					<div class="form-wrapper">
-						<div class="form-tabs">
-							<button class="tab-btn active" data-tab="login">Sign In</button>
-							<button class="tab-btn" data-tab="register">Create Account</button>
+					<div class="auth-card">
+						<div class="auth-tabs">
+							<button class="auth-tab active" data-tab="login">Sign In</button>
+							<button class="auth-tab" data-tab="register">Sign Up</button>
 						</div>
 
 						<form id="loginForm" class="auth-form active" data-form="login">
-							<div class="form-group">
-								<input type="text" id="loginUsername" placeholder="Username" required>
-								<label>Username</label>
+							<div class="form-field">
+								<input type="text" id="loginUsername" placeholder="Username" required autofocus>
 							</div>
-							<div class="form-group">
+							<div class="form-field">
 								<input type="password" id="loginPassword" placeholder="Password" required>
-								<label>Password</label>
 							</div>
-							<button type="submit" class="btn btn-primary">Sign In</button>
+							<button type="submit" class="btn-primary">Sign In</button>
 							<p class="form-error" id="loginError"></p>
 						</form>
 
 						<form id="registerForm" class="auth-form" data-form="register">
-							<div class="form-group">
-								<input type="text" id="regUsername" placeholder="Choose a username" required>
-								<label>Username</label>
+							<div class="form-field">
+								<input type="text" id="regUsername" placeholder="Choose username" required autofocus>
 							</div>
-							<div class="form-group">
-								<input type="password" id="regPassword" placeholder="Create password" required>
-								<label>Password</label>
+							<div class="form-field">
+								<input type="password" id="regPassword" placeholder="Password" required>
 							</div>
-							<button type="submit" class="btn btn-primary">Create Account</button>
+							<button type="submit" class="btn-primary">Create Account</button>
 							<p class="form-error" id="registerError"></p>
 						</form>
 					</div>
@@ -53,91 +52,126 @@
 			</div>
 		</div>
 
-		<!-- Dashboard Page -->
+		<!-- Main App -->
 		<div id="dashboardPage" class="page">
-			<nav class="navbar">
-				<div class="nav-brand">IMAGO</div>
-				<div class="nav-right">
-					<span id="userDisplay" class="user-badge"></span>
-					<button id="logoutBtn" class="btn btn-text">Sign Out</button>
-				</div>
-			</nav>
-
-			<div class="dashboard-container">
-				<div class="dashboard-header">
-					<div>
-						<h2>Your Images</h2>
-						<p class="subtitle">Upload, transform, and manage your visual content</p>
+			<div class="workspace">
+				<!-- Sidebar -->
+				<aside class="sidebar">
+					<div class="sidebar-header">
+						<div class="logo">IMG</div>
+						<div class="logo-text">IMAGO</div>
 					</div>
-					<button id="uploadBtnHeader" class="btn btn-primary">New Upload</button>
-				</div>
 
-				<div class="gallery" id="gallery">
-					<div class="gallery-placeholder">
-						<div class="placeholder-icon">📸</div>
-						<p>No images yet</p>
-						<p class="placeholder-hint">Upload your first image to get started</p>
+					<div class="sidebar-user">
+						<div class="user-avatar">👤</div>
+						<div class="user-info">
+							<div class="user-name" id="userDisplay"></div>
+							<div class="user-status">Active</div>
+						</div>
 					</div>
-				</div>
-			</div>
-		</div>
 
-		<!-- Upload Modal -->
-		<div id="uploadModal" class="modal">
-			<div class="modal-content">
-				<button class="modal-close">&times;</button>
-				<h3>Upload Image</h3>
-				<div class="upload-area" id="uploadArea">
-					<div class="upload-icon">⬆</div>
-					<p>Drop image here or click to select</p>
-					<p class="upload-hint">Max 50MB • JPEG, PNG, GIF, WebP</p>
-					<input type="file" id="fileInput" accept="image/*" hidden>
-				</div>
-				<div id="uploadProgress" class="progress-bar" style="display: none;">
-					<div class="progress-fill"></div>
-				</div>
-				<p class="upload-error" id="uploadError"></p>
-			</div>
-		</div>
+					<nav class="sidebar-nav">
+						<button class="nav-item active" data-section="gallery">
+							<span class="nav-icon">📸</span>
+							<span class="nav-label">Gallery</span>
+						</button>
+						<button class="nav-item" data-section="upload">
+							<span class="nav-icon">⬆️</span>
+							<span class="nav-label">Upload</span>
+						</button>
+					</nav>
 
-		<!-- Image Detail Modal -->
-		<div id="imageModal" class="modal">
-			<div class="modal-content modal-large">
-				<button class="modal-close">&times;</button>
-				<div class="image-detail">
-					<div class="image-preview">
-						<img id="detailImage" src="" alt="Image">
+					<div class="sidebar-footer">
+						<button id="logoutBtn" class="btn-logout">Sign Out</button>
 					</div>
-					<div class="image-info">
-						<h3 id="imageName"></h3>
-						<div class="image-stats">
-							<div class="stat">
-								<span class="stat-label">Dimensions</span>
-								<span class="stat-value" id="imageDim"></span>
+				</aside>
+
+				<!-- Main Content -->
+				<main class="main-content">
+					<!-- Gallery Section -->
+					<section id="gallerySection" class="section active">
+						<div class="section-header">
+							<h1>Your Images</h1>
+							<button id="uploadBtnMain" class="btn-primary-compact">Upload New</button>
+						</div>
+
+						<div class="gallery-grid" id="gallery">
+							<div class="gallery-empty">
+								<div class="empty-icon">📸</div>
+								<p>No images yet</p>
+								<p class="empty-hint">Upload your first image to start</p>
 							</div>
-							<div class="stat">
-								<span class="stat-label">Format</span>
-								<span class="stat-value" id="imageFormat"></span>
+						</div>
+					</section>
+
+					<!-- Upload Section -->
+					<section id="uploadSection" class="section">
+						<div class="section-header">
+							<h1>Upload Image</h1>
+						</div>
+
+						<div class="upload-box">
+							<div class="upload-area" id="uploadArea">
+								<div class="upload-icon">⬆️</div>
+								<p class="upload-title">Drop image here</p>
+								<p class="upload-hint">or click to browse • Max 50MB</p>
+								<input type="file" id="fileInput" accept="image/*" hidden>
 							</div>
-							<div class="stat">
-								<span class="stat-label">Size</span>
-								<span class="stat-value" id="imageSize"></span>
+							<div class="progress-section" id="progressSection" style="display: none;">
+								<div class="progress-bar">
+									<div class="progress-fill"></div>
+								</div>
+								<p class="progress-text" id="progressText">0%</p>
+							</div>
+							<p class="upload-error" id="uploadError"></p>
+						</div>
+					</section>
+				</main>
+			</div>
+
+			<!-- Image Detail Modal -->
+			<div id="imageModal" class="modal">
+				<div class="modal-overlay"></div>
+				<div class="modal-container">
+					<div class="modal-header">
+						<h2 id="modalImageName"></h2>
+						<button class="modal-close">&times;</button>
+					</div>
+
+					<div class="modal-body">
+						<div class="preview-panel">
+							<img id="detailImage" src="" alt="Image" class="image-preview">
+							<div class="image-meta">
+								<div class="meta-item">
+									<span class="meta-label">Size</span>
+									<span class="meta-value" id="imageDim"></span>
+								</div>
+								<div class="meta-item">
+									<span class="meta-label">Format</span>
+									<span class="meta-value" id="imageFormat"></span>
+								</div>
+								<div class="meta-item">
+									<span class="meta-label">File Size</span>
+									<span class="meta-value" id="imageSize"></span>
+								</div>
 							</div>
 						</div>
 
-						<div class="transform-section">
-							<h4>Transform</h4>
-							<div class="transform-controls">
+						<div class="controls-panel">
+							<div class="controls-section">
+								<h3 class="controls-title">Transform</h3>
+
 								<div class="control-group">
-									<label>Resize</label>
-									<div class="control-row">
+									<label class="control-label">Resize</label>
+									<div class="control-inputs">
 										<input type="number" id="resizeWidth" placeholder="Width" min="1">
+										<span class="input-sep">×</span>
 										<input type="number" id="resizeHeight" placeholder="Height" min="1">
 									</div>
 								</div>
 
 								<div class="control-group">
-									<label>Rotate</label>
+									<label class="control-label">Rotate</label>
 									<select id="rotateSelect">
 										<option value="0">No rotation</option>
 										<option value="90">90°</option>
@@ -147,7 +181,7 @@
 								</div>
 
 								<div class="control-group">
-									<label>Flip</label>
+									<label class="control-label">Flip</label>
 									<select id="flipSelect">
 										<option value="">No flip</option>
 										<option value="horizontal">Horizontal</option>
@@ -156,7 +190,7 @@
 								</div>
 
 								<div class="control-group">
-									<label>Format</label>
+									<label class="control-label">Format</label>
 									<select id="formatSelect">
 										<option value="jpeg">JPEG</option>
 										<option value="png">PNG</option>
@@ -166,8 +200,8 @@
 								</div>
 
 								<div class="control-group">
-									<label>Filters</label>
-									<div class="filter-checkboxes">
+									<label class="control-label">Effects</label>
+									<div class="checkbox-group">
 										<label class="checkbox">
 											<input type="checkbox" id="grayscaleCheck">
 											<span>Grayscale</span>
@@ -180,12 +214,12 @@
 								</div>
 							</div>
 
-							<button id="transformBtn" class="btn btn-primary btn-block">Apply Transform</button>
-							<p class="transform-error" id="transformError"></p>
-						</div>
+							<div class="controls-actions">
+								<button id="transformBtn" class="btn-primary-full">Apply Transform</button>
+								<button id="deleteBtn" class="btn-danger-full">Delete</button>
+							</div>
 
-						<div class="image-actions">
-							<button id="deleteBtn" class="btn btn-danger">Delete Image</button>
+							<p class="transform-error" id="transformError"></p>
 						</div>
 					</div>
 				</div>
