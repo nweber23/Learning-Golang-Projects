@@ -136,7 +136,7 @@ func displayHint(game *GameState) {
 	if game.secretNumber < 50 {
 		fmt.Println("Your secret number is in the lower half (1-50)")
 	} else {
-		fmt.Println("Your secret number is in the upper half (1-50)")
+		fmt.Println("Your secret number is in the upper half (50-100)")
 	}
 	fmt.Println()
 }
