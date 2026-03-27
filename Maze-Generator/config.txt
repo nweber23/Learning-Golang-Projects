@@ -1,0 +1,11 @@
+# Maze configuration
+WIDTH=40
+HEIGHT=20
+ENTRY=0,0
+EXIT=39,19
+OUTPUT_FILE=maze.txt
+PERFECT=true
+SEED=782173217
+ALGORITHM=dfs
+# WEB_VIEW=true
+# OUTPUT_IMAGE=maze.png
