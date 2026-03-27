@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -49,8 +50,17 @@ func fetchWorker(
 	// defer ensures this runs even if there's an error
 	defer wg.Done()
 
+	processed := 0
+
 	// Keep reading IDs until channel closes
 	for id := range idChan {
+		processed++
+
+		// Print progress every 1000 IDs attempted
+		if processed%1000 == 0 {
+			log.Printf("[WORKER] Attempted %d IDs so far (current ID: %d)", processed, id)
+		}
+
 		// Build URL for this ID
 		url := fmt.Sprintf("%s/%d/en.subject.pdf", config.BaseURL, id)
 

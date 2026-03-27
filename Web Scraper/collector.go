@@ -70,6 +70,11 @@ func collectResults(
 		}
 
 		uniqueSaved++
+
+		// Print progress every 1000 PDFs
+		if uniqueSaved%1000 == 0 {
+			log.Printf("[PROGRESS] Saved %d unique PDFs, found %d duplicates so far", uniqueSaved, duplicates)
+		}
 	}
 
 	// All results received, finalize statistics
