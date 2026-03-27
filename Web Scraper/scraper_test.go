@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -147,5 +149,78 @@ func TestFetchWorker(t *testing.T) {
 		if len(result.ContentHash) != 64 {
 			t.Errorf("expected 64-char hash, got %d", len(result.ContentHash))
 		}
+	}
+}
+
+func TestSavePDF(t *testing.T) {
+	tempDir := t.TempDir()
+	content := []byte("fake PDF content")
+	err := savePDF(content, 12345, tempDir)
+	if err != nil {
+		t.Fatalf("savePDF failed: %v", err)
+	}
+	filePath := filepath.Join(tempDir, "12345_en.subject.pdf")
+	savedContent, err := os.ReadFile(filePath)
+	if err != nil {
+		t.Fatalf("failed to read saved file: %v", err)
+	}
+	if string(savedContent) != "fake PDF content" {
+		t.Errorf("saved content mismatch: expected 'fake PDF content', got %q", string(savedContent))
+	}
+}
+
+func TestDedupeTracker(t *testing.T) {
+	deduper := NewDedupeTracker()
+	hash1 := "abc123"
+	hash2 := "xyz789"
+	if deduper.HasSeen(hash1) {
+		t.Errorf("expected HasSeen(hash1) = false initially")
+	}
+	deduper.MarkSeen(hash1)
+	if !deduper.HasSeen(hash1) {
+		t.Errorf("expected HasSeen(hash1) = true after MarkSeen")
+	}
+	if deduper.HasSeen(hash2) {
+		t.Errorf("expected HasSeen(hash2) = false")
+	}
+	deduper.MarkSeen(hash2)
+	if !deduper.HasSeen(hash2) {
+		t.Errorf("expected HasSeen(hash2) = true after MarkSeen")
+	}
+}
+
+func TestCollectResults(t *testing.T) {
+	tempDir := t.TempDir()
+	resultChan := make(chan FetchResult, 5)
+	done := make(chan struct{})
+	config := &ScraperConfig{
+		IDStart:   0,
+		IDEnd:     5,
+		OutputDir: tempDir,
+	}
+	go collectResults(resultChan, config, done)
+	sameContent := []byte("identical PDF")
+	sameHash := CalculateHash(sameContent)
+	resultChan <- FetchResult{ID: 1, Content: sameContent, ContentHash: sameHash, FetchedAt: time.Now()}
+	resultChan <- FetchResult{ID: 2, Content: sameContent, ContentHash: sameHash, FetchedAt: time.Now()}
+	resultChan <- FetchResult{ID: 3, Content: []byte("different PDF"), ContentHash: CalculateHash([]byte("different PDF")), FetchedAt: time.Now()}
+	close(resultChan)
+	<-done
+	files, err := os.ReadDir(tempDir)
+	if err != nil {
+		t.Fatalf("failed to read output dir: %v", err)
+	}
+	pdfCount := 0
+	for _, f := range files {
+		if f.Name() != "deduplication_report.json" {
+			pdfCount++
+		}
+	}
+	if pdfCount != 2 {
+		t.Errorf("expected 2 unique PDFs (1 duplicate removed), got %d", pdfCount)
+	}
+	reportPath := filepath.Join(tempDir, "deduplication_report.json")
+	if _, err := os.Stat(reportPath); err != nil {
+		t.Errorf("expected deduplication_report.json to exist")
 	}
 }
