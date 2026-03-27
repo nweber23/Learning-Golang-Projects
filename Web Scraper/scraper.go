@@ -1,6 +1,10 @@
 package main
 
-import "time"
+import (
+	"crypto/sha256"
+	"fmt"
+	"time"
+)
 
 type FetchResult struct {
 	ID          int
@@ -33,4 +37,9 @@ func (dt *DedupeTracker) HasSeen(hash string) bool {
 
 func (dt *DedupeTracker) MarkSeen(hash string) {
 	dt.Hashes[hash] = true
+}
+
+func CalculateHash(content []byte) string {
+	hash := sha256.Sum256(content)
+	return fmt.Sprintf("%x", hash)
 }

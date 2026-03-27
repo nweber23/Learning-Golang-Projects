@@ -6,13 +6,10 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
-	// Test loading defaults from config.txt
 	config, err := LoadConfig("config.txt")
 	if err != nil {
 		t.Fatalf("LoadConfig failed: %v", err)
 	}
-
-	// Verify defaults
 	if config.IDStart != 0 {
 		t.Errorf("expected IDStart=0, got %d", config.IDStart)
 	}
@@ -24,5 +21,37 @@ func TestLoadConfig(t *testing.T) {
 	}
 	if config.Timeout != 10*time.Second {
 		t.Errorf("expected Timeout=10s, got %v", config.Timeout)
+	}
+}
+
+func TestCalculateHash(t *testing.T) {
+	content := []byte("test PDF content")
+	hash := CalculateHash(content)
+	if len(hash) != 64 {
+		t.Errorf("expected 64 hex chars, got %d", len(hash))
+	}
+	for _, c := range hash {
+		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')) {
+			t.Errorf("expected hex chars, got %c", c)
+		}
+	}
+}
+
+func TestCalculateHash_Deterministic(t *testing.T) {
+	content := []byte("test PDF content")
+	hash1 := CalculateHash(content)
+	hash2 := CalculateHash(content)
+	if hash1 != hash2 {
+		t.Errorf("hash should be deterministic: %s != %s", hash1, hash2)
+	}
+}
+
+func TestCalculateHash_DifferentContent(t *testing.T) {
+	content1 := []byte("PDF content A")
+	content2 := []byte("PDF content B")
+	hash1 := CalculateHash(content1)
+	hash2 := CalculateHash(content2)
+	if hash1 == hash2 {
+		t.Errorf("different content should produce different hash")
 	}
 }
