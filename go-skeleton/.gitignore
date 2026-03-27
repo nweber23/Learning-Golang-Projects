@@ -1,0 +1,10 @@
+# Binaries
+client/student-client
+server/student-server
+
+# macOS
+.DS_Store
+
+# Go build artifacts
+*.exe
+*.out
