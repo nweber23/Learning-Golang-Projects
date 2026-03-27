@@ -55,3 +55,21 @@ func TestCalculateHash_DifferentContent(t *testing.T) {
 		t.Errorf("different content should produce different hash")
 	}
 }
+
+func TestProduceIDs(t *testing.T) {
+	idChan := make(chan int, 10)
+	go produceIDs(idChan, 0, 9)
+	var ids []int
+	for id := range idChan {
+		ids = append(ids, id)
+	}
+	if len(ids) != 10 {
+		t.Errorf("expected 10 IDs, got %d", len(ids))
+	}
+	for i := 0; i < 10; i++ {
+		if ids[i] != i {
+			t.Errorf("expected IDs in order, got %v", ids)
+			break
+		}
+	}
+}
