@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 )
@@ -70,6 +72,80 @@ func TestProduceIDs(t *testing.T) {
 		if ids[i] != i {
 			t.Errorf("expected IDs in order, got %v", ids)
 			break
+		}
+	}
+}
+
+func TestFetchPDF_Success(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/pdf")
+		w.Write([]byte("fake PDF content"))
+	}))
+	defer server.Close()
+	content, err := fetchPDF(server.URL, 5*time.Second)
+	if err != nil {
+		t.Fatalf("fetchPDF failed: %v", err)
+	}
+	if string(content) != "fake PDF content" {
+		t.Errorf("expected 'fake PDF content', got %q", string(content))
+	}
+}
+
+func TestFetchPDF_404(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer server.Close()
+	_, err := fetchPDF(server.URL, 5*time.Second)
+	if err == nil {
+		t.Errorf("expected error for 404, got nil")
+	}
+}
+
+func TestFetchPDF_Timeout(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(2 * time.Second)
+	}))
+	defer server.Close()
+	_, err := fetchPDF(server.URL, 100*time.Millisecond)
+	if err == nil {
+		t.Errorf("expected timeout error, got nil")
+	}
+}
+
+func TestFetchWorker(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/pdf")
+		w.Write([]byte("fake PDF"))
+	}))
+	defer server.Close()
+	idChan := make(chan int, 5)
+	resultChan := make(chan FetchResult, 5)
+	config := &ScraperConfig{
+		BaseURL: server.URL,
+		Timeout: 5 * time.Second,
+	}
+	go fetchWorker(idChan, resultChan, config)
+	idChan <- 1
+	idChan <- 2
+	idChan <- 3
+	close(idChan)
+	var results []FetchResult
+	for result := range resultChan {
+		results = append(results, result)
+		if len(results) == 3 {
+			break
+		}
+	}
+	if len(results) != 3 {
+		t.Errorf("expected 3 results, got %d", len(results))
+	}
+	for _, result := range results {
+		if result.ContentHash == "" {
+			t.Errorf("expected non-empty hash, got empty")
+		}
+		if len(result.ContentHash) != 64 {
+			t.Errorf("expected 64-char hash, got %d", len(result.ContentHash))
 		}
 	}
 }
