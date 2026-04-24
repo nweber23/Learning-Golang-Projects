@@ -1,12 +1,12 @@
 //go:build !amd64 || purego
 
-package main
+package Math
 
 func init() {
 	println("purego")
 }
 
-func matrixMultiplyVec4Batch(m *Matrix, vecs []Vec4) {
+func MatrixMultiplyVec4Batch(m *Matrix, vecs []Vec4) {
 	for i := range vecs {
 		v := &vecs[i]
 		vecs[i] = Vec4{
