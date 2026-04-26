@@ -60,97 +60,99 @@ func parseVertexNormal(line string) (Math.Vec4, error) {
 	return Math.Vec4{x, y, z, 1}, err
 }
 
-func parseFace(c *ObjContext, line string) (Rendering.Face, error) {
-	if strings.Count(line, " ") != 3 {
-		return Rendering.Face{}, errors.New("mesh is not triangulated")
+type QuadFace struct {
+	Triangles [2]Rendering.Face
+	IsQuad    bool
+}
+
+func parseVertexRef(ref string) (v, vt, vn int, err error) {
+	parts := strings.Split(ref, "/")
+	if len(parts) < 1 {
+		return 0, 0, 0, errors.New("invalid vertex reference")
 	}
 
-	var (
-		err  error
-		face Rendering.Face
-	)
-
-	switch {
-	case strings.Count(line, "//") == 3:
-		var (
-			v0, v1, v2    int
-			vn0, vn1, vn2 int
-		)
-
-		_, err = fmt.Sscanf(
-			line, "f %d//%d %d//%d %d//%d",
-			&v0, &vn0,
-			&v1, &vn1,
-			&v2, &vn1,
-		)
-
-		face.VertexIndices[0] = v0 - c.VertexIndexOffset - 1
-		face.VertexIndices[1] = v1 - c.VertexIndexOffset - 1
-		face.VertexIndices[2] = v2 - c.VertexIndexOffset - 1
-		face.NormalIndices[0] = vn0 - c.VertexNormalOffset - 1
-		face.NormalIndices[1] = vn1 - c.VertexNormalOffset - 1
-		face.NormalIndices[2] = vn2 - c.VertexNormalOffset - 1
-
-	case strings.Count(line, "/") == 3:
-		var (
-			v0, v1, v2    int
-			vt0, vt1, vt2 int
-		)
-
-		_, err = fmt.Sscanf(
-			line, "f %d/%d %d/%d %d/%d",
-			&v0, &vt0,
-			&v1, &vt1,
-			&v2, &vt2,
-		)
-
-		face.VertexIndices[0] = v0 - c.VertexIndexOffset - 1
-		face.VertexIndices[1] = v1 - c.VertexIndexOffset - 1
-		face.VertexIndices[2] = v2 - c.VertexIndexOffset - 1
-		face.UVs[0] = c.TextureVertices[vt0-c.TextureVertexOffset-1]
-		face.UVs[1] = c.TextureVertices[vt1-c.TextureVertexOffset-1]
-		face.UVs[2] = c.TextureVertices[vt2-c.TextureVertexOffset-1]
-
-	case strings.Count(line, "/") == 6:
-		var (
-			v0, v1, v2    int
-			vt0, vt1, vt2 int
-			vn0, vn1, vn2 int
-		)
-
-		_, err = fmt.Sscanf(
-			line, "f %d/%d/%d %d/%d/%d %d/%d/%d",
-			&v0, &vt0, &vn0,
-			&v1, &vt1, &vn1,
-			&v2, &vt2, &vn2,
-		)
-
-		face.VertexIndices[0] = v0 - c.VertexIndexOffset - 1
-		face.VertexIndices[1] = v1 - c.VertexIndexOffset - 1
-		face.VertexIndices[2] = v2 - c.VertexIndexOffset - 1
-		face.UVs[0] = c.TextureVertices[vt0-c.TextureVertexOffset-1]
-		face.UVs[1] = c.TextureVertices[vt1-c.TextureVertexOffset-1]
-		face.UVs[2] = c.TextureVertices[vt2-c.TextureVertexOffset-1]
-		face.NormalIndices[0] = vn0 - c.VertexNormalOffset - 1
-		face.NormalIndices[1] = vn1 - c.VertexNormalOffset - 1
-		face.NormalIndices[2] = vn2 - c.VertexNormalOffset - 1
-
-	default:
-		var (
-			v0, v1, v2 int
-		)
-		_, err = fmt.Sscanf(
-			line, "f %d %d %d",
-			&v0,
-			&v1,
-			&v2,
-		)
-		face.VertexIndices[0] = v0 - c.VertexIndexOffset - 1
-		face.VertexIndices[1] = v1 - c.VertexIndexOffset - 1
-		face.VertexIndices[2] = v2 - c.VertexIndexOffset - 1
+	_, err = fmt.Sscanf(parts[0], "%d", &v)
+	if err != nil {
+		return 0, 0, 0, err
 	}
 
-	return face, err
+	if len(parts) > 1 && parts[1] != "" {
+		_, err = fmt.Sscanf(parts[1], "%d", &vt)
+		if err != nil {
+			return 0, 0, 0, err
+		}
+	}
+
+	if len(parts) > 2 && parts[2] != "" {
+		_, err = fmt.Sscanf(parts[2], "%d", &vn)
+		if err != nil {
+			return 0, 0, 0, err
+		}
+	}
+
+	return v, vt, vn, nil
+}
+
+func parseFace(c *ObjContext, line string) (QuadFace, error) {
+	fields := strings.Fields(line[2:])
+
+	if len(fields) < 3 || len(fields) > 4 {
+		return QuadFace{}, errors.New("face must have 3 or 4 vertices")
+	}
+
+	var qf QuadFace
+	qf.IsQuad = len(fields) == 4
+
+	refs := make([]struct{ v, vt, vn int }, len(fields))
+	for i, field := range fields {
+		v, vt, vn, err := parseVertexRef(field)
+		if err != nil {
+			return QuadFace{}, err
+		}
+		refs[i] = struct{ v, vt, vn int }{v, vt, vn}
+	}
+
+	face := Rendering.Face{}
+	face.VertexIndices[0] = refs[0].v - c.VertexIndexOffset - 1
+	face.VertexIndices[1] = refs[1].v - c.VertexIndexOffset - 1
+	face.VertexIndices[2] = refs[2].v - c.VertexIndexOffset - 1
+
+	if refs[0].vt > 0 {
+		face.UVs[0] = c.TextureVertices[refs[0].vt-c.TextureVertexOffset-1]
+		face.UVs[1] = c.TextureVertices[refs[1].vt-c.TextureVertexOffset-1]
+		face.UVs[2] = c.TextureVertices[refs[2].vt-c.TextureVertexOffset-1]
+	}
+
+	if refs[0].vn > 0 {
+		face.NormalIndices[0] = refs[0].vn - c.VertexNormalOffset - 1
+		face.NormalIndices[1] = refs[1].vn - c.VertexNormalOffset - 1
+		face.NormalIndices[2] = refs[2].vn - c.VertexNormalOffset - 1
+	}
+
+	qf.Triangles[0] = face
+
+	if qf.IsQuad {
+		face2 := Rendering.Face{}
+		face2.VertexIndices[0] = refs[0].v - c.VertexIndexOffset - 1
+		face2.VertexIndices[1] = refs[2].v - c.VertexIndexOffset - 1
+		face2.VertexIndices[2] = refs[3].v - c.VertexIndexOffset - 1
+
+		if refs[0].vt > 0 {
+			face2.UVs[0] = c.TextureVertices[refs[0].vt-c.TextureVertexOffset-1]
+			face2.UVs[1] = c.TextureVertices[refs[2].vt-c.TextureVertexOffset-1]
+			face2.UVs[2] = c.TextureVertices[refs[3].vt-c.TextureVertexOffset-1]
+		}
+
+		if refs[0].vn > 0 {
+			face2.NormalIndices[0] = refs[0].vn - c.VertexNormalOffset - 1
+			face2.NormalIndices[1] = refs[2].vn - c.VertexNormalOffset - 1
+			face2.NormalIndices[2] = refs[3].vn - c.VertexNormalOffset - 1
+		}
+
+		qf.Triangles[1] = face2
+	}
+
+	return qf, nil
 }
 
 func parseMtlLibFile(filename string) ([]ObjMaterial, error) {
@@ -290,12 +292,16 @@ func LoadObjFile(filename string, singleMesh bool) (meshes []*Rendering.Mesh, _ 
 			currentTexture = c.Textures[mtlName]
 
 		case strings.HasPrefix(line, "f "):
-			f, err := parseFace(c, line)
+			qf, err := parseFace(c, line)
 			if err != nil {
 				return nil, err
 			}
-			f.Texture = currentTexture
-			c.Faces = append(c.Faces, f)
+			qf.Triangles[0].Texture = currentTexture
+			c.Faces = append(c.Faces, qf.Triangles[0])
+			if qf.IsQuad {
+				qf.Triangles[1].Texture = currentTexture
+				c.Faces = append(c.Faces, qf.Triangles[1])
+			}
 		}
 	}
 
